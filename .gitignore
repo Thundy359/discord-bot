@@ -1,0 +1,15 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# OS-specific files (e.g., macOS, Windows)
+.DS_Store
+Thumbs.db
+
+# Config file containing sensitive data (e.g., your bot's token)
+config.json
