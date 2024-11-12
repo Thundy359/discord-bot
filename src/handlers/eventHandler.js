@@ -1,22 +1,26 @@
-const fs = require("fs");
 const path = require("path");
+const getAllFiles = require("../utils/getAllFiles");
 
 module.exports = (client) => {
-  // Read event files from the 'events' folder
-  const eventFiles = fs
-    .readdirSync(path.join(__dirname, "../events"))
-    .filter((file) => file.endsWith(".js"));
+  // Get all event folder paths
+  const eventFolders = getAllFiles(path.join(__dirname, "..", "events"), true);
 
-  // Log the event files that are being loaded
-  console.log(`Loading ${eventFiles.length} event files...`);
+  // Iterate over each event folder
+  for (const eventFolder of eventFolders) {
+    // Get all event file paths from the folder
+    const eventFiles = getAllFiles(eventFolder);
+    eventFiles.sort((a, b) => a > b); // Sort the event files alphabetically
 
-  eventFiles.forEach((file) => {
-    const event = require(path.join(__dirname, "../events", file));
+    // Get the event name from the folder's name
+    const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();
 
-    // Ensure the event is being registered correctly
-    console.log(`Registering event: ${event.name}`);
-
-    // Bind the event handler to the client
-    client.on(event.name, (...args) => event.execute(...args, client));
-  });
+    // Register the event handler for the event
+    client.on(eventName, async (arg) => {
+      // Loop through all event files and execute them
+      for (const eventFile of eventFiles) {
+        const eventFunction = require(eventFile); // Import event handler
+        await eventFunction(client, arg); // Execute event handler with the client and event argument
+      }
+    });
+  }
 };
